@@ -1,0 +1,38 @@
+-- dotnet list package
+-- dotnet new webapi
+-- dotnet --version
+-- dotnet list package  
+-- dotnet publish --configuration Release --runtime win-x64
+-- dotnet publish -c Release -r win-x64 --self-contained
+-- dotnet add package Microsoft.EntityFrameworkCore
+-- dotnet add package Newtonsoft.Json
+
+-- dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+-- dotnet add package Microsoft.AspNetCore.Authentication.OAuth
+-- dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+-- dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+-- dotnet add package Microsoft.AspNetCore.Identity
+-- dotnet publish -c Release
+-- dotnet --list-runtimes
+-- https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish
+-- https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+
+dotnet publish [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
+    [-c|--configuration <CONFIGURATION>]
+    [-f|--framework <FRAMEWORK>] [--force] [--interactive]
+    [--manifest <PATH_TO_MANIFEST_FILE>] [--no-build] [--no-dependencies]
+    [--no-restore] [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
+    [--os <OS>] [-r|--runtime <RUNTIME_IDENTIFIER>]
+    [--self-contained [true|false]] [--no-self-contained]
+     [-s|--source <SOURCE>] [-v|--verbosity <LEVEL>]
+    [--version-suffix <VERSION_SUFFIX>]
+
+dotnet publish -h|--help
+
+
+<TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunEmitSymbols>true</PublishReadyToRunEmitSymbols>
+    <IsPublishable>True</IsPublishable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>

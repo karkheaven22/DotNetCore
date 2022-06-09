@@ -1,18 +1,16 @@
 -- dotnet list package
 -- dotnet new webapi
 -- dotnet --version
--- dotnet list package  
--- dotnet publish --configuration Release --runtime win-x64
--- dotnet publish -c Release -r win-x64 --self-contained
 -- dotnet add package Microsoft.EntityFrameworkCore
 -- dotnet add package Newtonsoft.Json
-
 -- dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
 -- dotnet add package Microsoft.AspNetCore.Authentication.OAuth
 -- dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 -- dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 -- dotnet add package Microsoft.AspNetCore.Identity
 -- dotnet publish -c Release
+-- dotnet publish --configuration Release --runtime win-x64
+-- dotnet publish -c Release -r win-x64 --self-contained
 -- dotnet --list-runtimes
 -- https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish
 -- https://docs.microsoft.com/en-us/dotnet/core/rid-catalog

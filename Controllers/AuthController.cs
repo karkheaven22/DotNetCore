@@ -1,3 +1,4 @@
+using DotNetCore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using static DotNetCore.Models.Constants;
 
 namespace DotNetCore.Controllers
 {
@@ -378,6 +380,19 @@ namespace DotNetCore.Controllers
                 payment = $"{m.Amount:n2} {m.CurrencyCode}",
                 StatusEnum = m.Status
             }).ToList()); ;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("Init")]
+        public IActionResult Init()
+        {
+            ISeriesLine<ApplicationDbContext> _job = new Job_SeriesLine<ApplicationDbContext>(_dbContext);
+            _job.Init();
+            _job.Context.Save();
+
+            var doc = _job.GenerateDocument(EnumSerialCode.Customer);
+            _job.Context.Save();
+            return Ok(doc);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using DotNetCore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,8 @@ namespace DotNetCore
         {
             //modelBuilder.Entity<ApplicationUser>().Ignore(p => p.NormalizedUserName);
             //modelBuilder.Entity<ApplicationUser>().Ignore(p => p.NormalizedEmail);
+            modelBuilder.ApplyConfiguration(new SeriesLineEntityConfiguration());
+
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ApplicationUser>().ToTable("tbl_Users");
@@ -29,6 +32,7 @@ namespace DotNetCore
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("tbl_UserRoles");
         }
 
+        public DbSet<Model_SeriesLine> SeriesLine { get; set; }
         public DbSet<Transaction> Transaction { get; set; }
     }
 

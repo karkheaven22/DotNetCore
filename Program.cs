@@ -15,7 +15,7 @@ namespace DotNetCore
 
         public static IWebHostBuilder CreateHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseKestrel()
+                .UseKestrel(c => c.AddServerHeader = false)
                 .UseStartup<Startup>()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseWebRoot(Directory.GetCurrentDirectory())
@@ -27,6 +27,8 @@ namespace DotNetCore
                     logging.AddConsole();
                     logging.AddDebug();
                     logging.AddFile(hostingContext.Configuration.GetSection("FileLogging"));
+                    logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Information);
+                    logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Information);
                     logging.AddEventSourceLogger();
                 });
     }

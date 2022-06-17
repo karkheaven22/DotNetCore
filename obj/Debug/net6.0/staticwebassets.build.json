@@ -1,11 +1,37 @@
 {
   "Version": 1,
-  "Hash": "ExI/Ut07wK/du4WdKcJuTS1fjlO7o4uKQ7msr5cBlaE=",
+  "Hash": "nK/niWbY3fe1WhTLDJtBGq9NVVwfVKBDYrHi7zA+KpI=",
   "Source": "DotNetCore",
   "BasePath": "_content/DotNetCore",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "DotNetCore\\wwwroot",
+      "Source": "DotNetCore",
+      "ContentRoot": "D:\\Develop\\DotNetCore\\wwwroot\\",
+      "BasePath": "_content/DotNetCore",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\Develop\\DotNetCore\\wwwroot\\indexchat.html",
+      "SourceId": "DotNetCore",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Develop\\DotNetCore\\wwwroot\\",
+      "BasePath": "_content/DotNetCore",
+      "RelativePath": "indexchat.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\indexchat.html"
+    }
+  ]
 }

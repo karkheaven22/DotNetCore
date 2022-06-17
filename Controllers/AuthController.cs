@@ -1,9 +1,11 @@
+using DotNetCore.Hubs;
 using DotNetCore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,13 +33,15 @@ namespace DotNetCore.Controllers
         private readonly JwtIssuerOptions _jwtOptions;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IHubContext<ChatHub> _hubContext;
 
         public AuthController(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IJwtFactory jwtFactory,
             IOptions<JwtIssuerOptions> jwtOptions,
             IWebHostEnvironment hostingEnvironment,
-            ApplicationDbContext dbContext)
+            ApplicationDbContext dbContext,
+            IHubContext<ChatHub> hubContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -45,6 +49,7 @@ namespace DotNetCore.Controllers
             _jwtOptions = jwtOptions.Value;
             _hostingEnvironment = hostingEnvironment;
             _dbContext = dbContext;
+            _hubContext = hubContext;
         }
 
         [AllowAnonymous]
@@ -393,6 +398,14 @@ namespace DotNetCore.Controllers
             var doc = _job.GenerateDocument(EnumSerialCode.Customer);
             _job.Context.Save();
             return Ok(doc);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("send")]
+        public async Task<IActionResult> send()
+        {
+            await _hubContext.Clients.All.SendAsync("broadcastMessage", "server", $"Home page loaded at: {DateTime.Now}");
+            return Ok("");
         }
     }
 }

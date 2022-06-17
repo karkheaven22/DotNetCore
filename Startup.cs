@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +78,24 @@ namespace DotNetCore
                        ClockSkew = TimeSpan.Zero
                    };
                    o.SaveToken = true;
+
+                   o.Events = new JwtBearerEvents
+                   {
+                       OnMessageReceived = context =>
+                       {
+                           var accessToken = context.Request.Query["access_token"];
+
+                           // If the request is for our hub...
+                           var path = context.HttpContext.Request.Path;
+                           if (!string.IsNullOrEmpty(accessToken) &&
+                               (path.StartsWithSegments("/hubs/chat")))
+                           {
+                               // Read the token out of the query string
+                               context.Token = accessToken;
+                           }
+                           return Task.CompletedTask;
+                       }
+                   };
                })
                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                {
@@ -94,9 +113,17 @@ namespace DotNetCore
                    o.ClientSecret = "<secret>";
                    o.CallbackPath = "/cb_oauth";
                    o.SaveTokens = true;
-               });
+               })
+               .AddIdentityCookies();
 
-            services.AddAuthentication().AddIdentityCookies();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
+                {
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                });
+            });
 
             services
                 .AddControllers()
@@ -107,7 +134,8 @@ namespace DotNetCore
                     options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 });
 
-            services.AddSignalR();
+            services.AddSignalR().AddJsonProtocol();
+            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
             services.AddSwaggerGen(c =>
                 {
@@ -139,6 +167,11 @@ namespace DotNetCore
 
             services.AddMvc();
             services.AddHttpContextAccessor();
+
+            services.AddAntiforgery(options =>
+            {
+                options.SuppressXFrameOptionsHeader = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -176,7 +209,18 @@ namespace DotNetCore
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chat");
+                endpoints.MapHub<ChatHub>("/hubs/chat");
+            });
+            //app.UseWebSockets();
+            app.Use(async (context, next) =>
+            {
+                var hubContext = context.RequestServices
+                                        .GetRequiredService<IHubContext<ChatHub>>();
+
+                if (next != null)
+                {
+                    await next.Invoke();
+                }
             });
 
             dbContext.Database.EnsureDeleted();

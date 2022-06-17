@@ -69,3 +69,5 @@ D:\Develop\DotNetCore\obj\Debug\net6.0\refint\DotNetCore.dll
 D:\Develop\DotNetCore\obj\Debug\net6.0\DotNetCore.pdb
 D:\Develop\DotNetCore\obj\Debug\net6.0\DotNetCore.genruntimeconfig.cache
 D:\Develop\DotNetCore\obj\Debug\net6.0\ref\DotNetCore.dll
+D:\Develop\DotNetCore\bin\Debug\net6.0\web.config
+D:\Develop\DotNetCore\bin\Debug\net6.0\DotNetCore.staticwebassets.runtime.json

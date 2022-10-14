@@ -1,0 +1,14 @@
+/DotNetCore/appsettings.json
+/DotNetCore/bin/*
+/DotNetCore/.vs/DotNetCore/v17/.suo
+/DotNetCore/bin/Debug/net6.0/DotNetCore.dll
+/DotNetCore/bin/Debug/net6.0/DotNetCore.pdb
+/DotNetCore/obj/staticwebassets.pack.sentinel
+/DotNetCore/obj/Debug/net6.0/DotNetCore.dll
+/DotNetCore/obj/Debug/net6.0/DotNetCore.pdb
+/DotNetCore/obj/Debug/net6.0/project.razor.json
+/DotNetCore/log
+/.vs/DotNetCore/FileContentIndex/*
+/.vs/DotNetCore/v17/*
+/DotNetCore/Logs/*
+/DotNetCore/obj/*

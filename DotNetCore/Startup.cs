@@ -1,4 +1,5 @@
 using DotNetCore.Hubs;
+using DotNetCore.Library.Encryptions;
 using LogHelper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,12 +58,14 @@ namespace DotNetCore
             services.AddSingleton<IJwtFactory, JwtFactory>();
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
             var _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"]));
+            var privateSigningKey = new ECDsaSecurityKey(AlgoRsa.LoadECDsa(Configuration["JWT:ECPrivateKey"]));
 
             services.Configure<JwtIssuerOptions>(options =>
             {
                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
                 options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-                options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+                //options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+                options.SigningCredentials = new SigningCredentials(privateSigningKey, SecurityAlgorithms.EcdsaSha256);
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -77,7 +80,7 @@ namespace DotNetCore
                        ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
                        ValidateLifetime = true,
                        ValidateIssuerSigningKey = true,
-                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"])),
+                       IssuerSigningKey = privateSigningKey,
                        RequireExpirationTime = false,
                        ClockSkew = TimeSpan.Zero
                    };

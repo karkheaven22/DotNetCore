@@ -15,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -62,13 +63,14 @@ namespace DotNetCore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _signInManager.PasswordSignInAsync(credentials.UserName, credentials.Password, true, false);
-            if (result.Succeeded)
+            var userToVerify = await _userManager.FindByNameAsync(credentials.UserName);
+            if (userToVerify == null) return BadRequest("User not found!");
+
+            if (await _userManager.CheckPasswordAsync(userToVerify, credentials.Password))
             {
                 var JwtToken = await GenerateJwtToken(credentials.UserName);
                 return Ok(JwtToken);
             }
-
             return BadRequest("Invalid username or password.");
         }
 
@@ -90,6 +92,25 @@ namespace DotNetCore.Controllers
             return new LoginResponse(accessToken, UserData.SecurityStamp);
         }
 
+        private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
+        {
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+                return await Task.FromResult<ClaimsIdentity>(null);
+
+            // get the user to verifty
+            var userToVerify = await _userManager.FindByNameAsync(userName);
+
+            if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
+
+            // check the credentials
+            if (await _userManager.CheckPasswordAsync(userToVerify, password))
+            {
+                return await Task.FromResult(_jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id.ToString()));
+            }
+
+            // Credentials are invalid, or account doesn't exist
+            return await Task.FromResult<ClaimsIdentity>(null);
+        }
 
         [AllowAnonymous]
         [HttpPost("UploadFile")]
@@ -162,7 +183,7 @@ namespace DotNetCore.Controllers
                         CurrencyCode = node["PaymentDetails"]?.SelectSingleNode("CurrencyCode")?.InnerText,
                         TransactionDate = DateTime.Parse(node["TransactionDate"]?.InnerText),
                         Status = (TransactionStatus)Enum.Parse(typeof(TransactionStatus), node["Status"]?.InnerText)
-                    }); ;
+                    });
                 }
 
                 bool isValid = TryValidateModel(i);

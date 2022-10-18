@@ -1,11 +1,10 @@
 using DotNetCore.Hubs;
 using DotNetCore.Library.Encryptions;
-using LogHelper;
+using DotNetCore.Library.HttpLogging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -21,7 +20,6 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -213,7 +211,6 @@ namespace DotNetCore
                     .AllowAnyHeader()
                     .AllowCredentials());
             //.SetIsOriginAllowed((host) => true)
-
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -15,6 +15,7 @@
           "Serilog.Enrichers.Environment": "2.2.0",
           "Serilog.Enrichers.Thread": "3.1.0",
           "Serilog.Settings.Configuration": "3.4.0",
+          "Serilog.Sinks.Console": "4.1.0",
           "Serilog.Sinks.File": "5.0.0"
         },
         "runtime": {
@@ -194,6 +195,17 @@
           }
         }
       },
+      "Serilog.Sinks.Console/4.1.0": {
+        "dependencies": {
+          "Serilog": "2.10.0"
+        },
+        "runtime": {
+          "lib/net5.0/Serilog.Sinks.Console.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "4.1.0.0"
+          }
+        }
+      },
       "Serilog.Sinks.File/5.0.0": {
         "dependencies": {
           "Serilog": "2.10.0"
@@ -329,6 +341,13 @@
       "sha512": "sha512-ULloXSiapTb3zOWodC0G4WRDQzA5RjMEfZNZzOZpH8kC3t/lrISLblklIpKC44CX0sMDF40MnJwTIQ3pFQFs4g==",
       "path": "serilog.settings.configuration/3.4.0",
       "hashPath": "serilog.settings.configuration.3.4.0.nupkg.sha512"
+    },
+    "Serilog.Sinks.Console/4.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-K6N5q+5fetjnJPvCmkWOpJ/V8IEIoMIB1s86OzBrbxwTyHxdx3pmz4H+8+O/Dc/ftUX12DM1aynx/dDowkwzqg==",
+      "path": "serilog.sinks.console/4.1.0",
+      "hashPath": "serilog.sinks.console.4.1.0.nupkg.sha512"
     },
     "Serilog.Sinks.File/5.0.0": {
       "type": "package",

@@ -1,18 +1,21 @@
-using System;
-using System.Threading.Tasks;
 using DotNetCore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
 
 namespace DotNetCore
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public ApplicationDbContext() { }
+        public ApplicationDbContext()
+        { }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,7 +39,8 @@ namespace DotNetCore
         public DbSet<Transaction> Transaction { get; set; }
     }
 
-    public static class ContextSeed{
+    public static class ContextSeed
+    {
         public static async Task SeedDataAsync(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
@@ -47,7 +51,6 @@ namespace DotNetCore
 
             if (!await RoleManager.RoleExistsAsync("Member"))
                 await RoleManager.CreateAsync(new ApplicationRole("Member"));
-
 
             var User = new ApplicationUser
             {

@@ -38,8 +38,6 @@
                 })
                 .configureLogging(signalR.LogLevel.Information)
                 .build();
-																
-						
 
             // Create a function that the hub can call to broadcast messages.
             connection.on('broadcastMessage', function (name, message) {
@@ -53,7 +51,7 @@
             });
 
 						connection.on("ReceiveSystemMessage", (message) => receiveMessage(message, "green"));
-						
+
             // Transport fallback functionality is now built into start.
             connection.start()
                 .then(function () {
@@ -72,7 +70,7 @@
                 console.error(error.message);
             });
         });
-				
+
 				function receiveMessage(message, color) {
 						const li = document.createElement("li");
 						if (color) {

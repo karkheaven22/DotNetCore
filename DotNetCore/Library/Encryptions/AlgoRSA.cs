@@ -97,7 +97,7 @@ namespace DotNetCore.Library.Encryptions
             {
                 var string_length = value.Length;
                 var character_index = value.StartsWith("0x", StringComparison.Ordinal) ? 2 : 0;
-                // Does the string define leading HEX indicator '0x'. Adjust starting index accordingly.               
+                // Does the string define leading HEX indicator '0x'. Adjust starting index accordingly.
                 var number_of_characters = string_length - character_index;
 
                 var add_leading_zero = false;
@@ -158,15 +158,14 @@ namespace DotNetCore.Library.Encryptions
             var loadback = LoadECDsa(privateKey, publicKey);
             var r = Verify(loadback);
 
-            
             var privateSigningKey = new ECDsaSecurityKey(ecCurve);
             var publicSigningKey = new ECDsaSecurityKey(ECDsa.Create(ecCurve.ExportParameters(false)));
 
             var token = CreateJwe(privateSigningKey, null);
             var result = DecryptAndValidateJwe(token, publicSigningKey, null);
 
-                X509Certificate2 cert = new CertificateRequest("C=US,O=Microsoft,OU=WGA,CN=TedSt", ecCurve, HashAlgorithmName.SHA256)
-                .CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddDays(-2));
+            X509Certificate2 cert = new CertificateRequest("C=US,O=Microsoft,OU=WGA,CN=TedSt", ecCurve, HashAlgorithmName.SHA256)
+            .CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddDays(-2));
             var a = cert.GetECDsaPrivateKey;
             var b = cert.GetECDsaPublicKey;
             return (null, null);
@@ -251,6 +250,5 @@ namespace DotNetCore.Library.Encryptions
             var pubKey = ECDsa.Create(key.ExportParameters(false));
             return pubKey.VerifyData(data, signature, HashAlgorithmName.SHA256);
         }
-
     }
 }

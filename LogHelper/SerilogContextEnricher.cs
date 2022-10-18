@@ -1,7 +1,7 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 
 namespace LogHelper

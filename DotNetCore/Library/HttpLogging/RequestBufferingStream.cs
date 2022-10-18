@@ -1,32 +1,34 @@
-﻿using System;
-using System.Buffers;
-using System.Diagnostics;
+﻿using LogHelper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpLogging;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LogHelper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging;
 
 #nullable enable
+
 namespace DotNetCore.Library.HttpLogging
 {
     internal sealed class RequestBufferingStream : Stream
     {
+        private readonly HttpContext _context;
         private readonly Stream _innerStream;
         private readonly Encoding _encoding;
-
+        private readonly HttpLoggingOptions _options;
+        private readonly List<string> _allowHeader = new() { "Authorization", "Content-Type", "Content-Length", "User-Agent" };
         public bool HasLogged { get; private set; }
 
-        public RequestBufferingStream(Stream innerStream, Encoding encoding)
+        public RequestBufferingStream(HttpContext context, HttpLoggingOptions options, Encoding encoding)
         {
-            _innerStream = innerStream;
+            _context = context;
+            _innerStream = _context.Request.Body;
+            _options = options;
             _encoding = encoding;
         }
+
         public Stream Stream => this;
 
         public override bool CanRead => _innerStream.CanRead;
@@ -59,7 +61,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer.Slice(0, res).Span);
-                LogHelper.Log.Info(text);
+                LogData(text);
                 HasLogged = true;
             }
             return res;
@@ -71,7 +73,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
-                LogHelper.Log.Info(text);
+                LogData(text);
                 HasLogged = true;
             }
             return res;
@@ -123,6 +125,33 @@ namespace DotNetCore.Library.HttpLogging
         {
             _innerStream.Write(buffer.AsSpan(offset, count));
         }
+
+        private void LogData(string data)
+        {
+            var request = _context.Request;
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+                Log.Info($"[{nameof(request.Protocol)}] {request.Protocol}");
+
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod) &&
+                _options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme) &&
+                _options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+                Log.Info($"[{request.Method}] {request.Scheme}://{request.Host}{request.PathBase}{request.Path}");
+
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+                Log.Info($"[{nameof(request.QueryString)}] {request.QueryString.Value}");
+
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                FilterHeaders(request.Headers);
+
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                Log.Info(data);
+        }
+
+        internal void FilterHeaders(IHeaderDictionary headers)
+        {
+            foreach (var (key, value) in headers)
+                if (_allowHeader.Contains(key))
+                    Log.Info($"[{key}] {value}");
+        }
     }
 }
-

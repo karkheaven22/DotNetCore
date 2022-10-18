@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #nullable enable
+
 namespace DotNetCore.Library.HttpLogging
 {
     public class ResponseBufferingStream : Stream, IHttpResponseBodyFeature
@@ -19,6 +20,7 @@ namespace DotNetCore.Library.HttpLogging
         private PipeWriter? _pipeAdapter;
         private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
         public bool HasLogged { get; private set; }
+        public string? ResponseText { get; private set; }
 
         public ResponseBufferingStream(HttpContext context, IHttpResponseBodyFeature innerBodyFeature, double ElapsedTime)
         {
@@ -95,9 +97,9 @@ namespace DotNetCore.Library.HttpLogging
         {
             if (!HasLogged)
             {
-                var text = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
+                ResponseText = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
                 Log.Info($"[ElapsedTime] {_elapsedTime}");
-                Log.Info(text);
+                Log.Info(ResponseText);
                 HasLogged = true;
             }
             return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
@@ -107,9 +109,9 @@ namespace DotNetCore.Library.HttpLogging
         {
             if (!HasLogged)
             {
-                var text = System.Text.Encoding.UTF8.GetString(buffer.Span);
+                ResponseText = System.Text.Encoding.UTF8.GetString(buffer.Span);
                 Log.Info($"[ElapsedTime] {_elapsedTime}");
-                Log.Info(text);
+                Log.Info(ResponseText);
                 HasLogged = true;
             }
             return _innerStream.WriteAsync(buffer, cancellationToken);
@@ -124,7 +126,5 @@ namespace DotNetCore.Library.HttpLogging
         {
             _innerStream.Write(buffer.AsSpan(offset, count));
         }
-
-       
     }
 }

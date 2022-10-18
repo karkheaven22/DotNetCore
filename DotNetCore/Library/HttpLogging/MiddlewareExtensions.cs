@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using System;
 
-namespace DotNetCore
+namespace DotNetCore.Library.HttpLogging
 {
     public static class MiddlewareExtensions
     {
@@ -12,6 +12,5 @@ namespace DotNetCore
             app.UseMiddleware<LogMiddleware>();
             return app;
         }
-            
     }
 }

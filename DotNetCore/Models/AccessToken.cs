@@ -30,7 +30,8 @@ namespace DotNetCore
         }
     }
 
-    public enum TransactionStatus {
+    public enum TransactionStatus
+    {
         Approved = 'A',
         Rejected = 'R',
         Done = 'D',
@@ -43,12 +44,16 @@ namespace DotNetCore
     {
         [Key, Required, MaxLength(50)]
         public string TransactionId { get; set; }
+
         [Required, Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
+
         [Required(AllowEmptyStrings = false)]
         public string CurrencyCode { get; set; }
+
         [Required]
         public DateTime TransactionDate { get; set; }
+
         [Required]
         public TransactionStatus Status { get; set; }
     }
@@ -61,6 +66,7 @@ namespace DotNetCore
         [JsonIgnore]
         [IgnoreDataMember]
         public TransactionStatus StatusEnum { get; set; }
-        public string Status => ((char)(int)StatusEnum).ToString(); 
+
+        public string Status => ((char)(int)StatusEnum).ToString();
     }
 }

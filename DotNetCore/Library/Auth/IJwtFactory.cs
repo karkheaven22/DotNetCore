@@ -7,7 +7,9 @@ namespace DotNetCore
     public interface IJwtFactory
     {
         Task<AccessToken> GenerateEncodedToken(string userId, IList<string> roles);
+
         Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity);
+
         ClaimsIdentity GenerateClaimsIdentity(string userName, string id);
     }
 }

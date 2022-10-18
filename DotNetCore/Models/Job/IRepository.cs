@@ -6,6 +6,7 @@ namespace DotNetCore.Models
     public interface IRepository<T> : IDisposable
     {
         IDatabaseTransaction<T> BeginTransaction();
+
         int Save();
     }
 

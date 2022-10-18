@@ -6,21 +6,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
 using static DotNetCore.Models.Constants;
 
 namespace DotNetCore.Controllers
@@ -118,12 +113,11 @@ namespace DotNetCore.Controllers
         {
             //1mb
             long MaxSize = 1 * 1024 * 1024;
-            
 
             if (file == null)
                 return BadRequest("Required File");
 
-            if(file.Length > MaxSize)
+            if (file.Length > MaxSize)
                 return BadRequest("Max Length");
 
             SaveFile(file);
@@ -134,13 +128,16 @@ namespace DotNetCore.Controllers
                     case "text/xml":
                         ReadXml(file.FileName);
                         return Ok("Ok");
+
                     case "text/csv":
                         ReadCsv(file.FileName);
                         return Ok("Ok");
+
                     default:
                         return BadRequest("Unknown format");
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -285,8 +282,8 @@ namespace DotNetCore.Controllers
                 if (isValid)
                     SaveData(i);
                 return i;
-            } 
-            catch(ArgumentNullException ex)
+            }
+            catch (ArgumentNullException ex)
             {
                 throw ex;
             }
@@ -297,7 +294,7 @@ namespace DotNetCore.Controllers
             catch (NullReferenceException ex)
             {
                 throw ex;
-            } 
+            }
             catch (FormatException ex)
             {
                 throw ex;

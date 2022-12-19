@@ -56,34 +56,39 @@ namespace LogHelper
         public static bool IsLoggingEnabled => FileLogger.IsLoggingEnabled;
         public static ILogger Logger => FileLogger.Logger;
 
-        public static void Debug(string message) => FileLogger.Logger.Debug(message);
+        private static string TrimText(this string message)
+        {
+            return message.Replace("\n", String.Empty).Replace("\r", String.Empty);
+        }
 
-        public static void Debug(string message, params object[] propertyValues) => FileLogger.Logger.Debug(message, propertyValues);
+        public static void Debug(string message) => FileLogger.Logger.Debug(message.TrimText());
 
-        public static void Debug(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Debug(exception, message, propertyValues);
+        public static void Debug(string message, params object[] propertyValues) => FileLogger.Logger.Debug(message.TrimText(), propertyValues);
 
-        public static void Info(string message) => FileLogger.Logger.Information(message);
+        public static void Debug(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Debug(exception, message.TrimText(), propertyValues);
 
-        public static void Info(string message, params object[] propertyValues) => FileLogger.Logger.Information(message, propertyValues);
+        public static void Info(string message) => FileLogger.Logger.Information(message.TrimText());
 
-        public static void Info(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Information(exception, message, propertyValues);
+        public static void Info(string message, params object[] propertyValues) => FileLogger.Logger.Information(message.TrimText(), propertyValues);
 
-        public static void Warn(string message) => FileLogger.Logger.Warning(message);
+        public static void Info(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Information(exception, message.TrimText(), propertyValues);
 
-        public static void Warn(string message, params object[] propertyValues) => FileLogger.Logger.Warning(message, propertyValues);
+        public static void Warn(string message) => FileLogger.Logger.Warning(message.TrimText());
 
-        public static void Warn(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Warning(exception, message, propertyValues);
+        public static void Warn(string message, params object[] propertyValues) => FileLogger.Logger.Warning(message.TrimText(), propertyValues);
 
-        public static void Error(string message) => FileLogger.Logger.Error(message);
+        public static void Warn(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Warning(exception, message.TrimText(), propertyValues);
 
-        public static void Error(string message, params object[] propertyValues) => FileLogger.Logger.Error(message, propertyValues);
+        public static void Error(string message) => FileLogger.Logger.Error(message.TrimText());
 
-        public static void Error(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Error(exception, message, propertyValues);
+        public static void Error(string message, params object[] propertyValues) => FileLogger.Logger.Error(message.TrimText(), propertyValues);
 
-        public static void Fatal(string message) => FileLogger.Logger.Fatal(message);
+        public static void Error(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Error(exception, message.TrimText(), propertyValues);
 
-        public static void Fatal(string message, params object[] propertyValues) => FileLogger.Logger.Fatal(message, propertyValues);
+        public static void Fatal(string message) => FileLogger.Logger.Fatal(message.TrimText());
 
-        public static void Fatal(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Fatal(exception, message, propertyValues);
+        public static void Fatal(string message, params object[] propertyValues) => FileLogger.Logger.Fatal(message.TrimText(), propertyValues);
+
+        public static void Fatal(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Fatal(exception, message.TrimText(), propertyValues);
     }
 }

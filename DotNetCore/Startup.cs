@@ -1,4 +1,4 @@
-using DotNetCore.Hubs;
+﻿using DotNetCore.Hubs;
 using DotNetCore.Library.Encryptions;
 using DotNetCore.Library.HttpLogging;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,8 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -178,7 +181,19 @@ namespace DotNetCore
                 options.SuppressXFrameOptionsHeader = true;
             });
             //services.AddResponseCaching();
-            services.AddResponseCompression();
+
+            services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
+            });
+
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+
             services.AddDistributedMemoryCache();
             services.AddHttpLogging(logging =>
             {
@@ -219,6 +234,7 @@ namespace DotNetCore
             app.UseResponseCompression();
             app.UseStaticFiles();
             //app.UseHttpLogging();
+            //app.UseW3CLogging();
             app.UseLogMiddleware();
             //app.UseWebSockets();
             app.Use(async (context, next) =>

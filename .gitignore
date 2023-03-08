@@ -8,10 +8,11 @@
 /DotNetCore/.vs
 /.vs
 /.vs/DotNetCore
+/.vs/DotNetCore/
 /.vs/DotNetCore/DesignTimeBuild/*
 /.vs/DotNetCore/FileContentIndex/*
 /.vs/DotNetCore/v17/*
-
+/.vs/DotNetCore/v17/
 **/[Dd]ebug/
 **/[Dd]ebugPublic/
 **/[Rr]elease/

@@ -12,13 +12,13 @@
 /.vs/DotNetCore/FileContentIndex/*
 /.vs/DotNetCore/v17/*
 
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-[Xx]64/
-[Xx]86/
-[Bb]uild/
-[Bb]in/
-[Oo]bj/
+**/[Dd]ebug/
+**/[Dd]ebugPublic/
+**/[Rr]elease/
+**/[Rr]eleases/
+**/[Xx]64/
+**/[Xx]86/
+**/[Bb]uild/
+**/[Bb]in/
+**/[Oo]bj/
 

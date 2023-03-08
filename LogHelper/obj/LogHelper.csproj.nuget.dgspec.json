@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Development\\DotNetCore\\LogHelper\\LogHelper.csproj": {
-      "version": "1.0.0",
+      "version": "1.0.1",
       "restore": {
         "projectUniqueName": "C:\\Development\\DotNetCore\\LogHelper\\LogHelper.csproj",
         "projectName": "LogHelper",
@@ -48,25 +48,21 @@
           "dependencies": {
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
-              "version": "[6.0.1, )"
-            },
-            "Microsoft.Extensions.Configuration.Binder": {
-              "target": "Package",
-              "version": "[6.0.0, )"
+              "version": "[7.0.0, )"
             },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": {
               "target": "Package",
-              "version": "[6.0.1, )"
+              "version": "[7.0.0, )"
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[6.0.0, )"
+              "version": "[7.0.0, )"
             },
-            "Serilog.Enrichers.Environment": {
+            "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
-              "version": "[2.2.0, )"
+              "version": "[7.0.0, )"
             },
-            "Serilog.Enrichers.Thread": {
+            "Serilog.Extensions.Logging": {
               "target": "Package",
               "version": "[3.1.0, )"
             },

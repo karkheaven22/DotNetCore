@@ -8,54 +8,35 @@ namespace LogHelper
 {
     internal class SerilogContextEnricher : ILogEventEnricher
     {
+        private static readonly string _applicationName = Assembly.GetEntryAssembly()?.GetName().Name ?? "SeriLog";
+        private static readonly string _applicationVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "0.0.0";
+        private static readonly string _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+
         public static string GetHostName()
         {
             return Dns.GetHostName();
         }
 
-        public static string GetIPAddress(bool getIPV6 = false)
+        public static string GetIPAddress(bool useIPv6 = false)
         {
-            try
-            {
-                var ipAddresses = (Dns.GetHostAddresses(GetHostName())).ToList();
+            var ipAddresses = Dns.GetHostAddresses(GetHostName()).Where(ip => !IPAddress.IsLoopback(ip));
 
-                if (!ipAddresses.Any())
-                {
-                    return string.Empty;
-                }
-                else
-                {
-                    ipAddresses = ipAddresses.Where(ip => !IPAddress.IsLoopback(ip)).ToList();
-                }
+            var ipAddress = useIPv6 ?
+                ipAddresses.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetworkV6) :
+                ipAddresses.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
 
-                foreach (var ipAddress in ipAddresses)
-                {
-                    if (getIPV6 && ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        return ipAddress.ToString();
-                    }
-                    else if (!getIPV6 && ipAddress.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return ipAddress.ToString();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Noncompliant
-            }
-
-            return string.Empty;
+            return ipAddress?.ToString() ?? string.Empty;
         }
 
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
-            var applicationAssembly = Assembly.GetEntryAssembly();
-            var name = applicationAssembly?.GetName().Name ?? "SeriLog";
-            var version = applicationAssembly?.GetName().Version ?? new Version("0.0.0");
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("ApplicationName", name));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("ApplicationVersion", version));
+
+            logEvent.AddPropertyIfAbsent(new LogEventProperty("ApplicationName", new ScalarValue(_applicationName)));
+            logEvent.AddPropertyIfAbsent(new LogEventProperty("ApplicationVersion", new ScalarValue(_applicationVersion)));
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("IpAddress", GetIPAddress(false)));
+            logEvent.AddPropertyIfAbsent(new LogEventProperty("EnvironmentName", new ScalarValue(_environment)));
+            logEvent.AddPropertyIfAbsent(new LogEventProperty("MachineName", new ScalarValue(Environment.MachineName)));
+            logEvent.AddPropertyIfAbsent(new LogEventProperty("ThreadId", new ScalarValue(Environment.CurrentManagedThreadId)));
         }
     }
 }

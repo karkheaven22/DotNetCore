@@ -8,12 +8,28 @@ using ILogger = Serilog.ILogger;
 
 namespace LogHelper
 {
-    internal static class FileLogger
+    internal class FileLogger
     {
-        private static IConfiguration Configuration { get; } = CreateConfiguration();
+        private static IConfigurationRoot Configuration { get; set; } = CreateConfiguration();
         public static bool IsLoggingEnabled => Configuration.GetValue<bool>("LoggingEnabled");
 
-        private static IConfiguration CreateConfiguration()
+        private static readonly ILogger Logger = new LoggerConfiguration()
+            .Filter.ByExcluding(_ => !IsLoggingEnabled)
+            .MinimumLevel.Debug()
+            .Enrich.FromLogContext()
+            .Enrich.With(new SerilogContextEnricher())
+            .ReadFrom.Configuration(Configuration, "Filelog")
+            .WriteTo.Console()
+            .CreateLogger();
+
+        public static ILogger GetLogger() => Logger;
+
+        public FileLogger(IConfigurationRoot configuration)
+        {
+            Configuration = configuration?? CreateConfiguration();
+        }
+
+        private static IConfigurationRoot CreateConfiguration()
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var builder = new ConfigurationBuilder()
@@ -23,38 +39,19 @@ namespace LogHelper
 
             try
             {
-                builder.Build();
+                return builder.Build();
             }
             catch (Exception ex) when (ex is FileNotFoundException || ex is JsonException || ex is SecurityException)
             {
-                Console.WriteLine($"An exception of type {ex.GetType()} occurred: {ex.Message}");
+                throw new InvalidOperationException($"Failed to create configuration: {ex.Message}", ex);
             }
-
-            return builder.Build();
         }
-
-        private static ILogger CreateLogger()
-        {
-            return new LoggerConfiguration()
-                    .Filter.ByExcluding(_ => !IsLoggingEnabled)
-                    .MinimumLevel.Debug()
-                    .Enrich.FromLogContext()
-                    .Enrich.WithEnvironmentName()
-                    .Enrich.WithMachineName()
-                    .Enrich.WithThreadId()
-                    .Enrich.With(new SerilogContextEnricher())
-                    .ReadFrom.Configuration(Configuration, "Filelog")
-                    .WriteTo.Console()
-                    .CreateLogger();
-        }
-
-        public static ILogger Logger => CreateLogger();
     }
 
     public static class Log
     {
         public static bool IsLoggingEnabled => FileLogger.IsLoggingEnabled;
-        public static ILogger Logger => FileLogger.Logger;
+        public static ILogger Logger => FileLogger.GetLogger();
 
         public static ILogger ForContext<T>()
         {

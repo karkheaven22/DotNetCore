@@ -1,39 +1,39 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Extensions.Logging;
+using System.Security;
+using System.Text.Json;
+using ILogger = Serilog.ILogger;
 
 namespace LogHelper
 {
     internal static class FileLogger
     {
-        private static IConfiguration? Configuration { get; set; }
-        public static bool IsLoggingEnabled => Convert.ToBoolean(Configuration?.GetSection("LoggingEnabled").Value);
+        private static IConfiguration Configuration { get; } = CreateConfiguration();
+        public static bool IsLoggingEnabled => Configuration.GetValue<bool>("LoggingEnabled");
 
-        static FileLogger() => EnvironmentCheck();
-
-        private static void EnvironmentCheck()
+        private static IConfiguration CreateConfiguration()
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
             try
             {
-                var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-                if (!string.IsNullOrEmpty(environment))
-                    Configuration = new ConfigurationBuilder()
-                        .AddJsonFile($"appsettings.json", true, true)
-                        //.AddJsonFile($"appsettings.{environment}.json", true, true)
-                        .AddEnvironmentVariables()
-                        .Build();
-                else
-                    Configuration = new ConfigurationBuilder()
-                        .AddJsonFile($"appsettings.json", true, true)
-                        .AddEnvironmentVariables()
-                        .Build();
+                builder.Build();
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is FileNotFoundException || ex is JsonException || ex is SecurityException)
             {
-                // Noncompliant
+                Console.WriteLine($"An exception of type {ex.GetType()} occurred: {ex.Message}");
             }
+
+            return builder.Build();
         }
 
-        public static ILogger CreateLogger()
+        private static ILogger CreateLogger()
         {
             return new LoggerConfiguration()
                     .Filter.ByExcluding(_ => !IsLoggingEnabled)
@@ -56,39 +56,62 @@ namespace LogHelper
         public static bool IsLoggingEnabled => FileLogger.IsLoggingEnabled;
         public static ILogger Logger => FileLogger.Logger;
 
-        private static string TrimText(this string message)
+        public static ILogger ForContext<T>()
         {
-            return message.Replace("\n", String.Empty).Replace("\r", String.Empty);
+            return Logger.ForContext<T>();
         }
 
-        public static void Debug(string message) => FileLogger.Logger.Debug(message.TrimText());
+        public static ILoggerFactory AddSeriLog(this ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddProvider(new SerilogLoggerProvider(Logger, false));
+            return loggerFactory;
+        }
 
-        public static void Debug(string message, params object[] propertyValues) => FileLogger.Logger.Debug(message.TrimText(), propertyValues);
+        public static ILoggingBuilder AddSeriLog(this ILoggingBuilder factory)
+        {
+            factory.AddProvider(new SerilogLoggerProvider(Logger, false));
+            return factory;
+        }
 
-        public static void Debug(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Debug(exception, message.TrimText(), propertyValues);
+        public static string TrimLine(this string message) => message.Replace("\n", String.Empty).Replace("\r", String.Empty);
 
-        public static void Info(string message) => FileLogger.Logger.Information(message.TrimText());
+        public static void Debug(this ILogger Logger, string message) => Logger.Debug(message);
 
-        public static void Info(string message, params object[] propertyValues) => FileLogger.Logger.Information(message.TrimText(), propertyValues);
+        public static void Debug(string message) => Logger.Debug(message);
 
-        public static void Info(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Information(exception, message.TrimText(), propertyValues);
+        public static void Debug(string message, params object[] propertyValues) => Logger.Debug(message, propertyValues);
 
-        public static void Warn(string message) => FileLogger.Logger.Warning(message.TrimText());
+        public static void Debug(Exception exception, string message, params object[] propertyValues) => Logger.Debug(exception, message, propertyValues);
 
-        public static void Warn(string message, params object[] propertyValues) => FileLogger.Logger.Warning(message.TrimText(), propertyValues);
+        public static void Info(this ILogger Logger, string message) => Logger.Information(message);
 
-        public static void Warn(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Warning(exception, message.TrimText(), propertyValues);
+        public static void Info(string message) => Logger.Information(message);
 
-        public static void Error(string message) => FileLogger.Logger.Error(message.TrimText());
+        public static void Info(string message, params object[] propertyValues) => Logger.Information(message, propertyValues);
 
-        public static void Error(string message, params object[] propertyValues) => FileLogger.Logger.Error(message.TrimText(), propertyValues);
+        public static void Info(Exception exception, string message, params object[] propertyValues) => Logger.Information(exception, message, propertyValues);
 
-        public static void Error(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Error(exception, message.TrimText(), propertyValues);
+        public static void Warn(this ILogger Logger, string message) => Logger.Warning(message);
 
-        public static void Fatal(string message) => FileLogger.Logger.Fatal(message.TrimText());
+        public static void Warn(string message) => Logger.Warning(message);
 
-        public static void Fatal(string message, params object[] propertyValues) => FileLogger.Logger.Fatal(message.TrimText(), propertyValues);
+        public static void Warn(string message, params object[] propertyValues) => Logger.Warning(message, propertyValues);
 
-        public static void Fatal(Exception exception, string message, params object[] propertyValues) => FileLogger.Logger.Fatal(exception, message.TrimText(), propertyValues);
+        public static void Warn(Exception exception, string message, params object[] propertyValues) => Logger.Warning(exception, message, propertyValues);
+
+        public static void Error(this ILogger Logger, string message) => Logger.Error(message);
+
+        public static void Error(string message) => Logger.Error(message);
+
+        public static void Error(string message, params object[] propertyValues) => Logger.Error(message, propertyValues);
+
+        public static void Error(Exception exception, string message, params object[] propertyValues) => Logger.Error(exception, message, propertyValues);
+
+        public static void Fatal(this ILogger Logger, string message) => Logger.Fatal(message);
+        public static void Fatal(string message) => Logger.Fatal(message);
+
+        public static void Fatal(string message, params object[] propertyValues) => Logger.Fatal(message, propertyValues);
+
+        public static void Fatal(Exception exception, string message, params object[] propertyValues) => Logger.Fatal(exception, message, propertyValues);
     }
 }

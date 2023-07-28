@@ -13,6 +13,7 @@ namespace LogHelper
     public interface IProcessingTime
     {
         void StartLogging(MeasureOn measureOn, string actionName, string objectName);
+
         void StopLogging();
     }
 
@@ -49,6 +50,5 @@ namespace LogHelper
                                _objectName,
                                _stopwatch.Elapsed.TotalSeconds);
         }
-
     }
 }

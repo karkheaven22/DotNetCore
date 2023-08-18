@@ -13,6 +13,30 @@
 /.vs/DotNetCore/FileContentIndex/*
 /.vs/DotNetCore/v17/*
 /.vs/DotNetCore/v17/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.jmf
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Xx]64/
+[Xx]86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]bj/
+[Ll]ogs/
 **/[Dd]ebug/
 **/[Dd]ebugPublic/
 **/[Rr]elease/
@@ -23,3 +47,29 @@
 **/[Bb]in/
 **/[Oo]bj/
 
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+*.suo
+*.dtbcache.v2

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Serilog.Sinks.SystemConsole.Themes;
 using Serilog;
+using Serilog.Settings.Configuration;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace LogHelper.Logger
 {
@@ -12,6 +13,7 @@ namespace LogHelper.Logger
         private static readonly Lazy<FileLogger> lazyInstance = new(true);
         public ILogger Logger = null!;
         public static FileLogger Instance => lazyInstance.Value;
+
         public FileLogger()
         {
             Initialize(null);
@@ -42,16 +44,16 @@ namespace LogHelper.Logger
 
         public ILogger CreateLogger()
         {
+            var options = new ConfigurationReaderOptions { SectionName = "Filelog" };
             return new LoggerConfiguration()
                     .Filter.ByExcluding(_ => !IsLoggingEnabled)
                     .MinimumLevel.Debug()
                     .Enrich.FromLogContext()
-                    .Enrich.WithEnvironmentName()
                     .Enrich.WithMachineName()
                     .Enrich.WithThreadId()
                     .Enrich.With(new SerilogContextEnricher())
-                    .WriteTo.Conditional(evt=> IsConsoleEnabled, wt=> wt.Console(theme: SystemConsoleTheme.Literate))
-                    .ReadFrom.Configuration(Configuration, "Filelog")
+                    .WriteTo.Conditional(evt => IsConsoleEnabled, wt => wt.Console(theme: SystemConsoleTheme.Literate))
+                    .ReadFrom.Configuration(Configuration!, options)
                     .CreateLogger();
         }
     }

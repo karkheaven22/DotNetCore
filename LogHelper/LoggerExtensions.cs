@@ -11,6 +11,7 @@ namespace LogHelper
             loggerFactory.AddProvider(new SerilogLoggerProvider(logger, false));
             return loggerFactory;
         }
+
         public static ILoggingBuilder AddSeriLog(this ILoggingBuilder factory, ILogger logger)
         {
             factory.AddProvider(new SerilogLoggerProvider(logger, false));

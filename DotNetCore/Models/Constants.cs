@@ -23,7 +23,6 @@ namespace DotNetCore.Models
         {
             [Description("CUST")]
             Customer,
-
             [Description("S.ORD")]
             SalesOrder
         }
@@ -39,5 +38,6 @@ namespace DotNetCore.Models
                 return description;
             return "Unknown";
         }
+
     }
 }

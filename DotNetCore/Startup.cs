@@ -1,13 +1,12 @@
-﻿using DotNetCore.Hubs;
-using DotNetCore.Library.Encryptions;
-using DotNetCore.Library.HttpLogging;
+using DotNetCore.Hubs;
+using LogHelper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,8 +20,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -59,14 +57,12 @@ namespace DotNetCore
             services.AddSingleton<IJwtFactory, JwtFactory>();
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
             var _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"]));
-            var privateSigningKey = new ECDsaSecurityKey(AlgoRsa.LoadECDsa(Configuration["JWT:ECPrivateKey"]));
 
             services.Configure<JwtIssuerOptions>(options =>
             {
                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
                 options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-                //options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
-                options.SigningCredentials = new SigningCredentials(privateSigningKey, SecurityAlgorithms.EcdsaSha256);
+                options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -81,7 +77,7 @@ namespace DotNetCore
                        ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
                        ValidateLifetime = true,
                        ValidateIssuerSigningKey = true,
-                       IssuerSigningKey = privateSigningKey,
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"])),
                        RequireExpirationTime = false,
                        ClockSkew = TimeSpan.Zero
                    };
@@ -181,19 +177,7 @@ namespace DotNetCore
                 options.SuppressXFrameOptionsHeader = true;
             });
             //services.AddResponseCaching();
-
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<BrotliCompressionProvider>();
-                options.Providers.Add<GzipCompressionProvider>();
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Optimal;
-            });
-
+            services.AddResponseCompression();
             services.AddDistributedMemoryCache();
             services.AddHttpLogging(logging =>
             {
@@ -227,6 +211,7 @@ namespace DotNetCore
                     .AllowCredentials());
             //.SetIsOriginAllowed((host) => true)
 
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCookiePolicy();
@@ -234,7 +219,6 @@ namespace DotNetCore
             app.UseResponseCompression();
             app.UseStaticFiles();
             //app.UseHttpLogging();
-            //app.UseW3CLogging();
             app.UseLogMiddleware();
             //app.UseWebSockets();
             app.Use(async (context, next) =>

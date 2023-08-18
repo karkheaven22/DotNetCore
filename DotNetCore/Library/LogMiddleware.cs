@@ -1,25 +1,25 @@
 ﻿using LogHelper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Options;
-using Microsoft.IO;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.IO;
+using Microsoft.AspNetCore.Http.Features;
+using DotNetCore.Library.HttpLogging;
 using System.Text;
-using System.Threading.Tasks;
-
 #nullable enable
 
-namespace DotNetCore.Library.HttpLogging
+namespace DotNetCore
 {
     public class LogMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IOptionsMonitor<HttpLoggingOptions> _options;
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
-        private readonly List<string> _allowHeader = new() { "Authorization", "Content-Type", "Content-Length", "User-Agent" };
+        private readonly List<string> _allowHeader = new() { "Authorization", "Content-Type", "Content-Length", "User-Agent"};
 
         public LogMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options)
         {
@@ -41,7 +41,7 @@ namespace DotNetCore.Library.HttpLogging
 
         private static double GetElapsedSeconds(long start, long stop)
         {
-            return (stop - start) / (double)Stopwatch.Frequency;
+            return (double)(stop - start) / (double)Stopwatch.Frequency;
         }
 
         private static void ContextNullException(HttpContext httpContext)
@@ -65,17 +65,15 @@ namespace DotNetCore.Library.HttpLogging
             httpContext.Features.Set<IHttpResponseBodyFeature>(ResponseBody);
             try
             {
-                httpContext.Response.OnStarting(state =>
-                {
+                httpContext.Response.OnStarting(state => {
                     var responseContext = (HttpContext)state;
                     responseContext.Response.Headers.Remove("expires");
                     responseContext.Response.Headers.Remove("pragma");
                     //remove the header you don't want in the `responseContext`
                     return Task.CompletedTask;
                 }, httpContext);
+
                 await _next(httpContext);
-                if (ResponseBody.HasLogged)
-                    Log.Info(ResponseBody.ResponseText!);
             }
             finally
             {
@@ -89,9 +87,25 @@ namespace DotNetCore.Library.HttpLogging
             if ((HttpLoggingFields.Request & options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = httpContext.Request;
-                request.EnableBuffering();
-                var requestBufferingStream = new RequestBufferingStream(httpContext, options, Encoding.UTF8);
-                request.Body = requestBufferingStream;
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+                    Log.Info($"[{nameof(request.Protocol)}] {request.Protocol}");
+                    
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod) &&
+                    options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme) &&
+                    options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+                    Log.Info($"[{request.Method}] {request.Scheme}://{request.Host}{request.PathBase}{request.Path}");
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+                    Log.Info($"[{nameof(request.QueryString)}] {request.QueryString.Value}");
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                    FilterHeaders(request.Headers);
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                {
+                    var requestBufferingStream = new RequestBufferingStream(request.Body, Encoding.UTF8);
+                    request.Body = requestBufferingStream.Stream;
+                }
             }
         }
     }

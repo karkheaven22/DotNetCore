@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using static DotNetCore.Models.Constants;
 
 namespace DotNetCore.Models
 {
-    public interface ISeriesLine<T>
+    public interface ISeriesLine<T> 
     {
         void Init();
-
         String GenerateDocument(EnumSerialCode SerialCode);
-
         IRepository<T> Context { get; }
     }
 
@@ -35,7 +34,7 @@ namespace DotNetCore.Models
 
         public void Init()
         {
-            if (!_context.SeriesLine.Any(m => m.SerialCode == EnumSerialCode.Customer.GetEnumDescription()))
+            if(!_context.SeriesLine.Any(m=> m.SerialCode == EnumSerialCode.Customer.GetEnumDescription()))
                 _context.SeriesLine.AddRange(
                     new ModelSeriesLine() { SerialCode = EnumSerialCode.Customer.GetEnumDescription() },
                     new ModelSeriesLine() { SerialCode = EnumSerialCode.SalesOrder.GetEnumDescription() }
@@ -45,8 +44,7 @@ namespace DotNetCore.Models
         public String GenerateDocument(EnumSerialCode SerialCode)
         {
             var record = _context.SeriesLine.Where(m => m.SerialCode == SerialCode.GetEnumDescription()).OrderByDescending(m => m.LineNo).FirstOrDefault();
-            if (record != null)
-            {
+            if (record != null) {
                 record.RunningNumber += record.IncrementNo;
                 record.LastUsedDate = DateTime.Now;
                 _context.SeriesLine.Update(record);

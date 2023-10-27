@@ -1,18 +1,12 @@
-﻿using System;
-using System.Buffers;
-using System.Diagnostics;
+﻿using LogHelper;
+using System;
 using System.IO;
-using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LogHelper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging;
 
 #nullable enable
+
 namespace DotNetCore.Library.HttpLogging
 {
     internal sealed class RequestBufferingStream : Stream
@@ -27,6 +21,7 @@ namespace DotNetCore.Library.HttpLogging
             _innerStream = innerStream;
             _encoding = encoding;
         }
+
         public Stream Stream => this;
 
         public override bool CanRead => _innerStream.CanRead;
@@ -59,7 +54,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer.Slice(0, res).Span);
-                LogHelper.Log.Info(text);
+                Log.Info<RequestBufferingStream>(text);
                 HasLogged = true;
             }
             return res;
@@ -71,7 +66,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
-                LogHelper.Log.Info(text);
+                Log.Info<RequestBufferingStream>(text);
                 HasLogged = true;
             }
             return res;
@@ -97,7 +92,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
-                LogHelper.Log.Info(text);
+                Log.Info<RequestBufferingStream>(text);
                 HasLogged = true;
             }
             return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
@@ -125,4 +120,3 @@ namespace DotNetCore.Library.HttpLogging
         }
     }
 }
-

@@ -1,5 +1,7 @@
 using DotNetCore.Hubs;
+using DotNetCore.Library;
 using LogHelper;
+using LogHelper.Encryptions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +22,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
@@ -41,9 +44,12 @@ namespace DotNetCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Replace |DataDirectory| placeholder in connection string
+            string DatabaseConnection = Configuration.GetConnectionString("DefaultConnection").Replace("|DataDirectory|", Directory.GetCurrentDirectory());
+
             services.AddDbContext<ApplicationDbContext>(
                 options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                    options.UseSqlServer(DatabaseConnection));
 
             services
                 .AddIdentityCore<ApplicationUser>(options => Configuration.GetSection(nameof(IdentityOptions)).Bind(options))
@@ -57,6 +63,7 @@ namespace DotNetCore
             services.AddSingleton<IJwtFactory, JwtFactory>();
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
             var _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"]));
+            var ECDsaSigningKey = new ECDsaSecurityKey(AlgorithmECDsa.LoadECDsa(Configuration["JWT:ECPrivateKey"]));
 
             services.Configure<JwtIssuerOptions>(options =>
             {
@@ -77,7 +84,7 @@ namespace DotNetCore
                        ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
                        ValidateLifetime = true,
                        ValidateIssuerSigningKey = true,
-                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"])),
+                       IssuerSigningKey = ECDsaSigningKey,
                        RequireExpirationTime = false,
                        ClockSkew = TimeSpan.Zero
                    };

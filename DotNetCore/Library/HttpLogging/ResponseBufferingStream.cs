@@ -96,8 +96,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer, offset, count);
-                Log.Info($"[ElapsedTime] {_elapsedTime}");
-                Log.Info(text);
+                Log.Info<ResponseBufferingStream>($"[ElapsedTime] {_elapsedTime} : {text}");
                 HasLogged = true;
             }
             return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
@@ -108,8 +107,7 @@ namespace DotNetCore.Library.HttpLogging
             if (!HasLogged)
             {
                 var text = System.Text.Encoding.UTF8.GetString(buffer.Span);
-                Log.Info($"[ElapsedTime] {_elapsedTime}");
-                Log.Info(text);
+                Log.Info<ResponseBufferingStream>($"[ElapsedTime] {_elapsedTime} : {text}");
                 HasLogged = true;
             }
             return _innerStream.WriteAsync(buffer, cancellationToken);
@@ -124,7 +122,5 @@ namespace DotNetCore.Library.HttpLogging
         {
             _innerStream.Write(buffer.AsSpan(offset, count));
         }
-
-       
     }
 }

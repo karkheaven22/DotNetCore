@@ -38,7 +38,6 @@ namespace LogHelper.Logger
             return new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.json", true, true)
                 .AddJsonFile($"appsettings.{environment}.json", true, true)
-                .AddEnvironmentVariables()
                 .Build();
         }
 
@@ -55,6 +54,11 @@ namespace LogHelper.Logger
                     .WriteTo.Conditional(evt => IsConsoleEnabled, wt => wt.Console(theme: SystemConsoleTheme.Literate))
                     .ReadFrom.Configuration(Configuration!, options)
                     .CreateLogger();
+        }
+
+        public void UseForContext<TSource>()
+        {
+            Logger = Logger.ForContext<TSource>();
         }
     }
 }

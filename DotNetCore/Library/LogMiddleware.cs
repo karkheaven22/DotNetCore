@@ -1,15 +1,16 @@
-﻿using LogHelper;
+﻿using DotNetCore.Library.HttpLogging;
+using LogHelper;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using Microsoft.IO;
-using Microsoft.AspNetCore.Http.Features;
-using DotNetCore.Library.HttpLogging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
+
 #nullable enable
 
 namespace DotNetCore
@@ -19,7 +20,7 @@ namespace DotNetCore
         private readonly RequestDelegate _next;
         private readonly IOptionsMonitor<HttpLoggingOptions> _options;
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
-        private readonly List<string> _allowHeader = new() { "Authorization", "Content-Type", "Content-Length", "User-Agent"};
+        private readonly List<string> _allowHeader = new() { "Authorization", "Content-Type", "Content-Length", "User-Agent" };
 
         public LogMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options)
         {
@@ -65,7 +66,8 @@ namespace DotNetCore
             httpContext.Features.Set<IHttpResponseBodyFeature>(ResponseBody);
             try
             {
-                httpContext.Response.OnStarting(state => {
+                httpContext.Response.OnStarting(state =>
+                {
                     var responseContext = (HttpContext)state;
                     responseContext.Response.Headers.Remove("expires");
                     responseContext.Response.Headers.Remove("pragma");
@@ -89,7 +91,7 @@ namespace DotNetCore
                 var request = httpContext.Request;
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
                     Log.Info($"[{nameof(request.Protocol)}] {request.Protocol}");
-                    
+
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod) &&
                     options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme) &&
                     options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))

@@ -238,8 +238,8 @@ namespace DotNetCore.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet("ReadXml")]
+        [ApiKey]
         public List<Transaction> ReadXml()
         {
             try

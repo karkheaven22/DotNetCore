@@ -1,5 +1,4 @@
-﻿using DotNetCore.Library.HttpLogging;
-using LogHelper;
+﻿using LogHelper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpLogging;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace DotNetCore
+namespace DotNetCore.Library.HttpLogging
 {
     public class LogMiddleware
     {
@@ -42,7 +41,7 @@ namespace DotNetCore
 
         private static double GetElapsedSeconds(long start, long stop)
         {
-            return (double)(stop - start) / (double)Stopwatch.Frequency;
+            return (stop - start) / (double)Stopwatch.Frequency;
         }
 
         private static void ContextNullException(HttpContext httpContext)

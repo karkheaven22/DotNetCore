@@ -1,12 +1,10 @@
 using DotNetCore.Hubs;
-using DotNetCore.Library;
-using LogHelper;
+using DotNetCore.Library.HttpLogging;
 using LogHelper.Encryptions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -23,7 +21,6 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,6 +58,9 @@ namespace DotNetCore
                 .AddSignInManager();
 
             services.AddSingleton<IJwtFactory, JwtFactory>();
+            services.AddTransient<IApiKeyValidation, ApiKeyValidation>();
+            services.AddScoped<ApiKeyAuthFilter>();
+
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
             var _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SecurityKey"]));
             var ECDsaSigningKey = new ECDsaSecurityKey(AlgorithmECDsa.LoadECDsa(Configuration["JWT:ECPrivateKey"]));
@@ -69,10 +69,14 @@ namespace DotNetCore
             {
                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
                 options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-                options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+                //options.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+                options.SigningCredentials = new SigningCredentials(ECDsaSigningKey, SecurityAlgorithms.EcdsaSha256);
             });
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options =>{
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                {
                    o.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
@@ -89,19 +93,15 @@ namespace DotNetCore
                        ClockSkew = TimeSpan.Zero
                    };
                    o.SaveToken = true;
-
                    o.Events = new JwtBearerEvents
                    {
                        OnMessageReceived = context =>
                        {
                            var accessToken = context.Request.Query["access_token"];
-
                            // If the request is for our hub...
                            var path = context.HttpContext.Request.Path;
-                           if (!string.IsNullOrEmpty(accessToken) &&
-                               (path.StartsWithSegments("/hubs/chat")))
+                           if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hubs/chat")))
                            {
-                               // Read the token out of the query string
                                context.Token = accessToken;
                            }
                            return Task.CompletedTask;
